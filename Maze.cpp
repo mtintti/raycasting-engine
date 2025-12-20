@@ -4,33 +4,30 @@
 #include "Maze.h"
 #include <vector>
 #include "gobals.h"
+#include <glm.hpp> 
 
 Maze::Maze() {};
 Maze::~Maze() {};
 
 std::vector<std::vector<int>> tilemap;
+glm::vec3 colors[441];
+glm::vec3 c;
+glm::vec2 translations[441];
+bool tilemapDone = false;
+int row = 21;
+int column = 21;
+
 
 void Maze::creation(int mazeSize)
 {
     std::cout << "in Maze.creation()";
-    //int row = 21; // orig
-    //int column = 21; // origi
-    row = 21;
-    column = 21;
     bool gone = false;
-    //std::vector<std::vector<int>> tilemap(row, std::vector<int>(column, 0));
-    //tilemap = std::vector<std::vector<int>>(row, std::vector<int>(column, 0)); 
     tilemap.assign(row, std::vector<int>(column, 0));
 
-
     std::cout << "in Maze.creation() past vector.. \n";
-    /*for(int firstrow = 0; firstrow <= row; firstrow++){
-        std::cout << firstrow << " ";
-    }*/
-    const int first = 1;    // past
-    const int rangeTo = 20; // past
-    // const int first = 1;
-    // const int rangeTo = 19;
+    const int first = 1; 
+    const int rangeTo = 20;
+
     std::random_device rand_dev;
     std::mt19937 generator(rand_dev());
     std::uniform_int_distribution<int> distr(first, rangeTo);
@@ -46,60 +43,37 @@ void Maze::creation(int mazeSize)
     {
         for (int j = 0; j < column; j++)
         {
-
-            // tilemap[i][j]
-            // tilemap.push_back[i][j];
             std::cout << tilemap[i][j] << " ";
         }
         std::cout << "\n";
     }
     std::cout << "--start/end set --\n";
-    // prims maze
-    // int N = 1, S= 2, E = 3, W = 8;
+    std::cout<< "tilemap is done?? "<<tilemapDone;
+    
     std::vector<std::vector<int>> possiblePoints(0, std::vector<int>(2));
 
-    /*for(int j = start; j < column + 1; j++){
-        std::cout << "we are in (0, " << j<< " )" << " start was : (0, " << start << " )";
-    }*/
-    struct Neighbors
-    {
-        int nRow, nColumn;
-        int sRow, sColumn;
-        int wRow, wColumn;
-        int eRow, eColumn;
-    };
-    // mine int offx[] = {0, 1, 0, -1};
-    // mine int offy[] = {-1, 0, 1, 0};
 
-    // int x = 1;
-    // int y = start;
-    // int nx, ny = 0;
-    int prevx, prevy = 0;
-    int count = 0;
-    // possiblePoints.push_back({x, y});
 
-    // Offsets for moving in four directions
-    int offx[] = {0, 2, 0, -2};
-    int offy[] = {-2, 0, 2, 0};
+    int offx[] = {0, 2, 0, -2}; // liikutaan x
+    int offy[] = {-2, 0, 2, 0}; // liikutaan y
 
-    // Start inside the maze (just below start point)
+    
     int x = 1;
     int y = start;
     tilemap[x][y] = 1;
 
     std::vector<std::vector<int>> walls;
 
-    // Add surrounding walls (2-step away)
+    // lisätään kaksi askeleen päässä olevat
     for (int k = 0; k < 4; k++)
     {
         int nx = x + offx[k];
         int ny = y + offy[k];
         if (nx > 0 && nx < row -1 && ny > 0 && ny < column -1)
-        // if (nx >= 1 && nx <= row - 2 && ny >= 1 && ny <= column - 2)
 
         {
             walls.push_back({nx, ny});
-            tilemap[nx][ny] = 4; // mark as frontier
+            tilemap[nx][ny] = 4;
         }
     }
 
@@ -107,19 +81,18 @@ void Maze::creation(int mazeSize)
 
     while (!walls.empty())
     {
-        // Pick a random wall
+        // otetaan randomi seinä
         int r = std::rand() % walls.size();
         int wallx = walls[r][0];
         int wally = walls[r][1];
         walls.erase(walls.begin() + r);
 
-        // Check if this wall has a path cell two steps away
+        // katsotaan jos sillä on naapuri cell lähdellä
         std::vector<std::pair<int, int>> naapurit;
         for (int k = 0; k < 4; k++)
         {
             int nx = wallx + offx[k];
             int ny = wally + offy[k];
-            // if (nx > 0 && nx < row -1 && ny > 0 && ny < column -1)
 
             if (nx >= 0 && nx < row && ny >= 0 && ny < column)
             {
@@ -132,16 +105,16 @@ void Maze::creation(int mazeSize)
 
         if (!naapurit.empty())
         {
-            // Pick random neighbor that is a passage
+            // otateen randomi naapuri
             auto neighbor = naapurit[std::rand() % naapurit.size()];
             int nx = neighbor.first;
             int ny = neighbor.second;
 
-            // Find cell between wall and passage
+            // löydetään keskiosa seinästä ja reitistä
             int midX = (wallx + nx) / 2;
             int midY = (wally + ny) / 2;
 
-            // Make passage through wall
+            // ja tehdään reitti seinästä
             tilemap[wallx][wally] = 1;
             tilemap[midX][midY] = 1;
 
@@ -149,14 +122,10 @@ void Maze::creation(int mazeSize)
             {
                 int frontierx = wallx + offx[k];
                 int frontiery = wally + offy[k];
-                // if (frontierx > 0 && frontierx < row -1 && frontiery > 0 && frontiery < column -1)
 
                 if (frontierx > 0 && frontierx < row-1 && frontiery > 0 && frontiery < column-1)
                 {
-                    // for (int frontierx = 2; frontierx < 3; frontierx++) {
-                    // for (int frontiery = 0; frontiery < column; frontiery++){
-                    //   std::cout << "\n in mat: "<< frontierx << ", " << frontiery;
-                    //}
+                    
 
                      if (tilemap[frontierx][frontiery] == 0)
                     {
@@ -168,112 +137,64 @@ void Maze::creation(int mazeSize)
         }
     }
 
-    // Reset frontier marks (4) to walls (0)
+    // laitetaan frontier merkit -> 0
     for (int i = 0; i < row; i++)
         for (int j = 0; j < column; j++)
             if (tilemap[i][j] == 4)
                 tilemap[i][j] = 0;
 
-    // Place end point again (in case overwritten)
+    
     tilemap[row - 1][end] = 3;
 
-    // Print maze to terminal
-    std::cout << "\nGenerated Maze:\n";
+
+    std::cout << "\nGenerated Maze:\n";     
     for (int i = 0; i < row; i++)
     {
         for (int j = 0; j < column; j++)
-        {
-            std::cout << tilemap[i][j] << " ";
+        {       
+            std::cout << tilemap[i][j] << " ";   
         }
         std::cout << "\n";
-    }
-}
-
-
-/*while (!possiblePoints.empty())
-{
-    // pick a random frontier cell
-    int r = rand() % possiblePoints.size();
-    nx = possiblePoints[r][0];
-    ny = possiblePoints[r][1];
-
-    tilemap[nx][ny] = 5; // mark as part of the path
-
-    // explore neighbors of this cell
-    for (int k = 0; k < 4; k++)
-    {
-        int nextx = nx + offx[k];
-        int nexty = ny + offy[k];
-
-        if (nextx >= 1 && nextx < row - 1 && nexty >= 1 && nexty < column - 1)
-        {
-            if (tilemap[nextx][nexty] == 0)
-            {                              // unexplored
-                tilemap[nextx][nexty] = 4; // mark as frontier
-                possiblePoints.push_back({nextx, nexty});
-            }
-        }
-    }
-    // remove used cell from frontier
-    possiblePoints.erase(possiblePoints.begin() + r);
-}
-for (int i = 0; i < row; i++){
-        for (int j = 0; j < column; j++){
-
-            // tilemap[i][j]
-            // tilemap.push_back[i][j];
-            std::cout << tilemap[i][j] << " ";
-        }
-        std::cout << "\n";
-    }*/
-
-// emd for possible points not zero line, okey..
-
-/*for (int i = 0; i < row; i++) // / *
-{
-    for (int j = start; j < column; j++)
-    {
-        std::cout << "In mat = (" << i << " , " << j << " ) \n";
-        std::cout << "start is: " << 0 << " , " << start;
-        // int N = row -1;
-        // possiblePoints.insert(row - 1, row +1, column -1, column +1);
-        for (int n = 0; n < 4; n++) {
-            int nx = i + offx[n];
-            int ny = j + offy[n];
-            //tilemap[nx][ny] = 4;
-            //tilemap[i][j] = 5;
-            if(nx >= 0 && nx < row && ny >= 0 && ny < column){
-            std::cout << "\n neighbors = (" << nx << " , " << ny << " )";
-            tilemap[nx][ny] = 5;
-
-            //tilemap[i][j] = 5;
+        }    
+  
+    // laitetaan tilemap value numeron mukaan oikeat värit colors indexin numeron paikalle
+    // haetaan myöhemmin colors index numerolla translate paikat jotta saadaan värit screeniin 
+    for(int i = 0; i < row; i++){
+        for(int j = 0; j < column; j++){
+            if(tilemap[i][j] == 0){
+                c = {0.180, 0.180, 0.180};
             };
+            if (tilemap[i][j] == 1) {
+                c = {0.0f, 1.0f, 0.0f};
+            };
+            if (tilemap[i][j] == 2) {
+                c = {0.0f, 0.0f, 1.0f}; // pink
+                 
+            };
+            if (tilemap[i][j] == 3){
+                c = {1.0f, 1.0f, 0.0f}; // yellow
+                
+            };
+            int ourInstIndex = i * column + j;
+            colors[ourInstIndex] = c;
         };
-
-        if (count == 2)
-        {
-            break;
-        };
-        count++;
     };
-}; */
-// / * new try - ⌄⌄
 
-// std::vector<int, int> frontier;
-/*for(int x = -1; x <=1; x++){
-    for(int y = -1; y <= 1; y++){
-        if(x== 0 && y == 0 || x != 0 && y != 0){
-            continue;
-        } try {
-            if(tilemap[i + x])
-        }
-    }
-}*/
+    // tehdään translations vertex pisteet. neilöt on tehty kahdesta kolmiosta, yhdessä neliössä on 6 pistettä.
+    // aloitetaan pisteiden koordinaatio ylävasemmassta kohdasta eli -1 ja +1 opengl koordinaatti muutoksessa.
+    int indx = 0;
+    float offset = 0.05f;
+    for(int y = 21; y > -21; y -= 2){
+        for(int x = -21; x < +21; x += 2){
+            glm::vec2 t;
+            t.x = (float)x / 21.0f + offset; // x numero jaetaan tilemapin pituudella ja lisätään offsetti jotta ei tungosta
+            t.y = (float)y / 21.0f - offset;
+            translations[indx++] = t;
+        };
+    };
+    std::cout <<"\n translations are done!";
+    
 
-//    for (int i = 0; i < row; i++)
-//    {
-//        for (int j = 0; j < column; j++)
-//        {
-
-//        }
-//    }
+    tilemapDone = true;
+    std::cout<< "\n tilemap is done?? "<<tilemapDone;
+}

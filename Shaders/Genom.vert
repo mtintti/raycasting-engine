@@ -1,21 +1,17 @@
 
-#version 330 core
+#version 430 compatibility
 
-uniform mat4 projection;
-uniform ivec2 mapSize;
+layout (location = 0) in vec2 aPos;
+layout (location = 1) in vec3 aColor;
+layout (location = 2) in vec2 aOffset;
 
-layout (location = 0) in uint aTileId;
 
-out VS_OUT {
-    uint tileId;
-} vs_out;
+out vec3 fColor;
 
 void main()
 {
-    int i = gl_VertexID;
-    float x = float(i / mapSize.y); //float(i & 15);
-    float y = float(i % mapSize.y); //float((i >> 4) & 15);
-    gl_Position = vec4(x, y, 0, 1);
     
-    vs_out.tileId = aTileId;
+    vec2 pos = aPos + aOffset;
+    fColor = aColor;
+    gl_Position = vec4(pos, 0.0, 1.0);
 }

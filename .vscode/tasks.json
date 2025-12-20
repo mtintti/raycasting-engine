@@ -13,6 +13,7 @@
                 "/MD",
                 "${workspaceFolder}\\glad.c",
                 "-I${workspaceFolder}\\include",
+                "-I${workspaceFolder}/glm",
                 "Renderer.cpp",
                 "Maze.cpp",
                 "/link",

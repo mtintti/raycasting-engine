@@ -6,7 +6,70 @@
 #include <fstream> // load() funct
 #include <sstream> // load() funct
 #include "Maze.h"
+#include "Game.h"
 
+GLFWwindow *window = nullptr;
+
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+
+void CheckGLError(const char* label) {
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+        std::cout << "OpenGL Error at " << label << ": " << err << std::endl;
+    }
+}
+
+//shader creation and rendereing // error testing debug
+#define glCheckError() glCheckError_(__FILE__, __LINE__)
+
+void APIENTRY glDebugOutput(GLenum source, 
+                            GLenum type, 
+                            unsigned int id, 
+                            GLenum severity, 
+                            GLsizei length, 
+                            const char *message, 
+                            const void *userParam)
+{
+    if(id == 131169 || id == 131185 || id == 131218 || id == 131204) return; // ignore these non-significant error codes
+
+    std::cout << "---------------" << std::endl;
+    std::cout << "Debug message (" << id << "): " <<  message << std::endl;
+
+    switch (source)
+    {
+        case GL_DEBUG_SOURCE_API:             std::cout << "Source: API"; break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   std::cout << "Source: Window System"; break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: std::cout << "Source: Shader Compiler"; break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     std::cout << "Source: Third Party"; break;
+        case GL_DEBUG_SOURCE_APPLICATION:     std::cout << "Source: Application"; break;
+        case GL_DEBUG_SOURCE_OTHER:           std::cout << "Source: Other"; break;
+    } std::cout << std::endl;
+
+    switch (type)
+    {
+        case GL_DEBUG_TYPE_ERROR:               std::cout << "Type: Error"; break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::cout << "Type: Deprecated Behaviour"; break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::cout << "Type: Undefined Behaviour"; break; 
+        case GL_DEBUG_TYPE_PORTABILITY:         std::cout << "Type: Portability"; break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         std::cout << "Type: Performance"; break;
+        case GL_DEBUG_TYPE_MARKER:              std::cout << "Type: Marker"; break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          std::cout << "Type: Push Group"; break;
+        case GL_DEBUG_TYPE_POP_GROUP:           std::cout << "Type: Pop Group"; break;
+        case GL_DEBUG_TYPE_OTHER:               std::cout << "Type: Other"; break;
+    } std::cout << std::endl;
+    
+    switch (severity)
+    {
+        case GL_DEBUG_SEVERITY_HIGH:         std::cout << "Severity: high"; break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       std::cout << "Severity: medium"; break;
+        case GL_DEBUG_SEVERITY_LOW:          std::cout << "Severity: low"; break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION: std::cout << "Severity: notification"; break;
+    } std::cout << std::endl;
+    std::cout << std::endl;
+}
+
+// temp
 
 Renderer::Renderer(int window_w, int window_h)
 {
@@ -23,6 +86,7 @@ Renderer::Renderer(int window_w, int window_h)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true); // comment out if realised
 
     window = glfwCreateWindow(window_w, window_h, "Split view demo", NULL, NULL);
     if (!window)
@@ -34,76 +98,231 @@ Renderer::Renderer(int window_w, int window_h)
     }
     glfwMakeContextCurrent(window);
     gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-    std::cout << "game window done -> next data init ";
-    init();
-}
 
-void Renderer::init()
-{
-    // trying to create init render data
-    // test of maze shown on screen
-    std::cout << "\n data init: VertexArray ";
-    GLuint VertexArrayID; // VBO
-    glGenVertexArrays(1, &VertexArrayID);
-    glBindVertexArray(VertexArrayID);
-
-    std::cout << "\n data init: VertexBuffer ";
-    // GLuint vertexbuff; // VAO
-    glGenBuffers(1, &vertexbuff);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexbuff);
-    /*std::vector<int> convertedOpenGl; // muutetaan tilemap(sprites) 1d muotoon että pystytään käyttämään sitä in OpenGl
-
-    for (const auto &f : tilemap)
+    //error test gldebugOutput
+    int flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
     {
-        convertedOpenGl.insert(convertedOpenGl.end(), f.begin(), f.end());
-    };*/
-    CreateShader();
-    GenerateVertexBuffer();
-    GenerateVertexArray();
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(glDebugOutput, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+        glEnable(GL_SCISSOR_TEST); // scissor for viewports
+    }
+        
 }
 
-GLuint Load(const char* path, GLenum type){
+
+
+GLuint Renderer::Load(const char* path, GLenum type){
     std::ifstream file(path);
     std::stringstream ss;
     ss << file.rdbuf();
 
     std::string src = ss.str();
+    std::cout << "\n file from load src" << src << "\n";
     const char* cstr = src.c_str();
+    if (!file.is_open()) {
+        std::cout << "Could be not openned shader file: " << path << "\n";
+    }
 
     GLuint shader = glCreateShader(type);
     glShaderSource(shader, 1, &cstr, nullptr);
     glCompileShader(shader);
-
-    // check errors
     GLint success;
     glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         char log[512];
         glGetShaderInfoLog(shader, 512, nullptr, log);
-        std::cout << "Shader error: " << log << "\n";
-    }
+        std::cout << "Shader error: " << log << " in path: "<< path<< "\n";
+    };
+    
     return shader;
+    
 }
 
-GLuint CreateShader(){
+GLuint Renderer::CreateShader(){
     
     GLuint vert = Load("Shaders/Genom.vert", GL_VERTEX_SHADER); 
-    GLuint geom = Load("Shaders/Genom.genom", GL_GEOMETRY_SHADER); 
-    GLuint frag = Load("/Shaders/Genom.frag", GL_FRAGMENT_SHADER); 
+    GLuint frag = Load("Shaders/Genom.frag", GL_FRAGMENT_SHADER); 
+    std::cout << "vert shader ID = " << vert << "\n";
+    std::cout << "frag shader ID = " << frag << "\n";
 
-    //GLenum type;
-    //GLuint shader = glCreateShader(type);
-    GLuint shaderProg;
+   
     shaderProg = glCreateProgram();
     glAttachShader(shaderProg, vert);
-    glAttachShader(shaderProg, geom);
+    CheckGLError("attach vert");
     glAttachShader(shaderProg, frag);
+    CheckGLError("attach frag");
+    
+    
     glLinkProgram(shaderProg);
+    GLint linked;
+    glGetProgramiv(shaderProg, GL_LINK_STATUS, &linked);
+    if (!linked) {
+        char log[1024];
+        glGetProgramInfoLog(shaderProg, 1024, NULL, log);
+        std::cout << "SProgram Link was not success!\n" << log << "\n";
+    }
+    std::cout << "SProgram Link was success!\n";
+    
     return shaderProg;
-    //glShaderSource(shader, 1, tilemap, nullptr)
-
 
 }
+
+GLuint Renderer::CreatePlayerShader(){
+    GLuint pvert = Load("Shaders/player.vert", GL_VERTEX_SHADER); 
+    GLuint pfrag = Load("Shaders/player.frag", GL_FRAGMENT_SHADER); 
+    std::cout << "vert playershader ID = " << pvert << "\n";
+    std::cout << "frag playershader ID = " << pfrag << "\n";
+   
+    playerProg = glCreateProgram();
+    CheckGLError("create playerProg");
+    glAttachShader(playerProg, pvert);
+    CheckGLError("attach vert");
+    glAttachShader(playerProg, pfrag);
+    CheckGLError("attach frag");
+    
+    
+    glLinkProgram(playerProg);
+    CheckGLError("link playerProg");
+    GLint linked;
+    glGetProgramiv(playerProg, GL_LINK_STATUS, &linked);
+    if (!linked) {
+        char log[1024];
+        glGetProgramInfoLog(playerProg, 1024, NULL, log);
+        std::cout << "pProgram Link was not success!\n" << log << "\n";
+    }
+    std::cout << "pProgram Link was success!\n";
+    return playerProg;
+};
+
+//VBO for tilemap texture
+GLuint Renderer::GenerateVertexBuffer(){
+    
+    glGenBuffers(1, &vbo);
+    CheckGLError("vbo");
+    std::cout <<"\n VBO ID: "<<vbo << "\n";
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glBufferData(GL_ARRAY_BUFFER,sizeof(glm::vec2) * 441, &translations[0], GL_STATIC_DRAW);
+    int size = 0;
+    glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+    std::cout << "GL VBO buffer size: " << size << " bytes\n";
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+    return vbo;
+}
+
+
+
+
+//VAO for one tileID
+GLuint Renderer::GenerateVertexArray(){
+
+    float quadVertices[] = {
+        // positions    
+        -0.05f,  0.05f, 
+        0.05f, -0.05f, 
+        -0.05f, -0.05f, 
+
+        -0.05f,  0.05f, 
+         0.05f, -0.05f,
+         0.05f,  0.05f, 
+    };
+
+    
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    glGenBuffers(1, &colour);
+    glBindVertexArray(quadVAO);
+
+
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, colour);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),0);
+    glVertexAttribDivisor(1,1); 
+
+    //  instance data tilemap:ille
+    glEnableVertexAttribArray(2);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo); // meidän translated vectori pisteet
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glVertexAttribDivisor(2, 1); //on instanced vertex attribute.
+    return quadVAO;
+
+};
+
+
+void Renderer::updateColors(glm::vec3* colors)
+{
+    std::cout <<"\n";
+    std::cout << "\n in updateColors in Renderer class";
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, colour);
+    CheckGLError("quadVAO and color buff bind in updateColors");
+    glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(glm::vec3) * 441,colors);
+    CheckGLError("after bufferSubData in updateColors");
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3),0);
+    CheckGLError("after vertexAttrib in updateColors");
+    glVertexAttribDivisor(1,1);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    CheckGLError("after bindBuffer in updateColors");
+ 
+}
+
+
+GLuint Renderer::playerInit(){
+
+    float playerVertices[] = {
+        // positions     
+        -0.05f,  0.05f, 
+    };
+
+    //player/camera VA0 
+    glGenVertexArrays(1, &playerVAO);
+    glBindVertexArray(playerVAO);
+    
+    glBufferData(GL_ARRAY_BUFFER, sizeof(playerVertices), playerVertices, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0,2,GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    glBindVertexArray(0);
+
+    return playerVAO;
+
+
+};
+
+
+void Renderer::init()
+{
+
+    CreateShader();
+    CreatePlayerShader();
+    if(translations->length() <0){
+        std::cout <<"\n translations are not on renderer side!";
+    };
+    if(translations->length > 0){
+        std::cout <<"\n translations are in renderer side " << translations->length() <<" ";
+        for(int i = 0; i < translations->length(); i++){
+            std::cout <<"t = " << i  << translations[i].x << " , " << translations[i].y;
+        }
+    };
+
+    GenerateVertexBuffer();
+    GenerateVertexArray();
+    std::cout <<"player pos for uniform "<< playerPosition.x << " , " << playerPosition.y;
+
+    
+}
+
+
 
 Renderer::~Renderer()
 {
@@ -125,21 +344,41 @@ void processInput(GLFWwindow *window)
 
 void Renderer::render()
 {
+    
+        glViewport(0, 0, window_w/2, window_h);
+        glScissor(0, 0, window_w/2, window_h);
+        
+        glUseProgram(shaderProg); // tiles
+        CheckGLError("maze shaderProg");
+        glBindVertexArray(quadVAO); // tiles
 
-    // std::cout << "Render::render called" << std::endl;
-    // std::cout << "esc pressed: " << escPressed;
+        CheckGLError("after quadVAO Bind");
+        glDrawArraysInstanced(GL_TRIANGLES,0,6,441);
 
-    // Draw the triangle !
-    /*std::cout << "\n data init done - drawing pictures";
-    glDrawArrays(GL_TRIANGLES, 0, 3); // Starting from vertex 0; 3 vertices total -> 1 triangle
-    glDisableVertexAttribArray(0);*/
+        // player draw call
+        CheckGLError("before playerprog");
+        glUseProgram(playerProg);
+        
+        CheckGLError("after playerprog"); 
+        GLint loc = glGetUniformLocation(playerProg, "uniformPlayerPosition");
+        CheckGLError("get uniformplayerpos in prog");
+        glUniform2f(loc, playerPosition.x, playerPosition.y);
+        CheckGLError("after uniform2f call with x,y");
+        glBindVertexArray(playerVAO);
+        CheckGLError("after playerVAO Bind to prog");
+        glPointSize(20);
+        glDrawArrays(GL_POINTS, 0, 2);
+        CheckGLError("draw points call");
 
-    glBindVertexArray(vertexbuff);
-    glDrawArrays(GL_TRIANGLES, 0, 6);
-    glBindVertexArray(0);
+       
 
-    processInput(window);
-    // glfwMakeContextCurrent(window);
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+        glViewport (window_w/2, 0, window_w/2, window_h);
+        glScissor(window_w/2, 0, window_w/2, window_h);
+        glClearColor(0.0f, 1.0f, 0.0f, 1.0f); // green
+        glClear(GL_COLOR_BUFFER_BIT);
+
+
+        processInput(window);
+        glfwSwapBuffers(window);
+        glfwPollEvents();
 }
