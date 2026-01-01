@@ -426,7 +426,7 @@ void processInput(GLFWwindow *window)
         glfwSetWindowShouldClose(window, true);
         escPressed = true;
         running = false;
-        glfwTerminate();
+        
     }
 }
 
@@ -501,8 +501,7 @@ void Renderer::render(const std::vector<rgb> image)
         glDrawArrays(GL_POINTS, 0, 800*800);
         CheckGLError("quad drawArrays call after ");
 
-
+        glfwPollEvents();
         processInput(window);
         glfwSwapBuffers(window);
-        glfwPollEvents();
 }

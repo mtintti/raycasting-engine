@@ -1,4 +1,5 @@
 
+
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/glad.h>
 #define GLFW_INCLUDE_NONE
@@ -6,11 +7,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "Game.h"
+//#include "Game.h"
 #include "Game.cpp"
 #include <chrono>
 #include <iostream>
 #include <thread>
+
 
 #define INFOforDEBUG true
 #define Cell 72
@@ -34,8 +36,8 @@ int main(int argc, char **argv)
     int invidualframe = 0;
 #endif
   
-    Game game(window_w, window_h, mazeSize, gameSize); // {WINDOW_W, WINDOW_H}
-    while (running)
+    Game game(window_w, window_h, mazeSize, gameSize); // {WINDOW_W, WINDOW_H}+
+    while (running && !glfwWindowShouldClose(window))
     {
         auto curr = std::chrono::steady_clock::now();
         elapsed = (double)std::chrono::duration_cast<std::chrono::nanoseconds>(curr - timelast).count();
@@ -68,5 +70,6 @@ int main(int argc, char **argv)
 #endif
         std::this_thread::sleep_for(std::chrono::microseconds(500));
     }
+    glfwTerminate();
     return 0;
 };
