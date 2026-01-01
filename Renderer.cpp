@@ -7,11 +7,15 @@
 #include <sstream> // load() funct
 #include "Maze.h"
 #include "Game.h"
+//#include "color.h"
 
 GLFWwindow *window = nullptr;
+//float discriminaatti; if using renderer extern
 
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+
+
 
 void CheckGLError(const char* label) {
     GLenum err = glGetError();
@@ -197,6 +201,36 @@ GLuint Renderer::CreatePlayerShader(){
     return playerProg;
 };
 
+
+GLuint Renderer::CreateRayQuadShader(){
+    
+    GLuint rayvert = Load("Shaders/ray.vert", GL_VERTEX_SHADER); 
+    GLuint rayfrag = Load("Shaders/ray.frag", GL_FRAGMENT_SHADER); 
+    std::cout << "vert shader ID = " << rayvert << "\n";
+    std::cout << "frag shader ID = " << rayfrag << "\n";
+
+   
+    rayProg = glCreateProgram();
+    glAttachShader(rayProg, rayvert);
+    CheckGLError("attach rvert");
+    glAttachShader(rayProg, rayfrag);
+    CheckGLError("attach rfrag");
+    
+    
+    glLinkProgram(rayProg);
+    GLint linked;
+    glGetProgramiv(rayProg, GL_LINK_STATUS, &linked);
+    if (!linked) {
+        char log[1024];
+        glGetProgramInfoLog(rayProg, 1024, NULL, log);
+        std::cout << "RProgram Link was not success!\n" << log << "\n";
+    }
+    std::cout << "RProgram Link was success!\n";
+    
+    return rayProg;
+
+}
+
 //VBO for tilemap texture
 GLuint Renderer::GenerateVertexBuffer(){
     
@@ -298,6 +332,57 @@ GLuint Renderer::playerInit(){
 
 
 };
+float verticesQuad[2 * 800 * 800];
+
+int hittedr = 0;
+int missedr = 0;
+
+GLuint Renderer::GenerateQuadForRay(const std::vector<rgb> image){
+    // checking if we can see our hits and misses
+    for(int i = 0; i < image.size(); i++){
+        if(image[i].red == 1.0f){
+            hittedr++;
+        };
+        if(image[i].red == 0.5f){
+            missedr++;
+        };
+    };
+    std::cout << "\n from render hit: " << hittedr;
+    std::cout << "\n from render missed: " << missedr;
+
+    //unsigned int quadRayVAO, quadRayVBO;
+    glGenBuffers(1, &quadRayVBO); // vertexQuad points
+    glBindBuffer(GL_ARRAY_BUFFER, quadRayVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(verticesQuad), verticesQuad, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, quadRayVBO);
+    CheckGLError("quadrayVAO bind creation calls");
+
+    // one x and y quadVertex float value with a stride of 2 is one pixel point
+    glGenVertexArrays(1, &quadRayVAO);
+    glBindVertexArray(quadRayVAO); // overall used for shader
+    glBindBuffer(GL_ARRAY_BUFFER, quadRayVBO);
+    glEnableVertexAttribArray(5);
+    glVertexAttribPointer(5,2,GL_FLOAT,GL_FALSE, 2 * sizeof(float), 0);
+    CheckGLError("quadrayVAO vertex point call");
+    
+    // invidual rgb colors for pixels sent to shaders
+    // setting every 3 float values as one pixels colors
+    glGenBuffers(1, &inviRays);
+    glBindBuffer(GL_ARRAY_BUFFER, inviRays);
+    glBufferData(GL_ARRAY_BUFFER, image.size() * sizeof(rgb), image.data(), GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(6);
+    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),0); // or offset as -> (void*)(2* sizeof(float))
+    CheckGLError("quadrayVAO image rgb colors attached");
+
+    /*glEnableVertexAttribArray(6); for texture
+    glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE,4 * sizeof(float),  (void*)(2 * sizeof(float)));
+    glBindVertexArray(0); 
+    CheckGLError("quadrayVAO texture coordinates set");*/
+
+    
+    return quadRayVAO;
+
+};
 
 
 void Renderer::init()
@@ -305,6 +390,7 @@ void Renderer::init()
 
     CreateShader();
     CreatePlayerShader();
+    CreateRayQuadShader();
     if(translations->length() <0){
         std::cout <<"\n translations are not on renderer side!";
     };
@@ -314,13 +400,15 @@ void Renderer::init()
             std::cout <<"t = " << i  << translations[i].x << " , " << translations[i].y;
         }
     };
-
     GenerateVertexBuffer();
     GenerateVertexArray();
+    std::cout << "\n render init";
+    std::cout << "\n projection done -> showing in render";
     std::cout <<"player pos for uniform "<< playerPosition.x << " , " << playerPosition.y;
 
     
-}
+};
+//extern float discriminaatti;
 
 
 
@@ -342,7 +430,35 @@ void processInput(GLFWwindow *window)
     }
 }
 
-void Renderer::render()
+void Renderer::displaypixel(const std::vector<rgb> image){
+
+    
+    //unsigned int texture; maybe soon to be passed colors and pixels?? as a texture to
+    // pass on changed window size change??
+    glGenFramebuffers(1, &texture);
+    glBindFramebuffer(GL_FRAMEBUFFER, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 800, 800, 0,GL_RGB, GL_UNSIGNED_BYTE, image.data());
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    /*std::cout <<"\n";
+    std::cout << "\n in displaypixel in Renderer class";
+    glBindVertexArray(quadRayVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, inviRays);
+    CheckGLError("quadVAO and invidual ray buff bind in displaypixel");
+    glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(image),&image[0]);
+    CheckGLError("after bufferSubData in displaypixel");
+    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(image),0);
+    CheckGLError("after vertexAttrib in displaypixel");
+    glVertexAttribDivisor(6,1);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    CheckGLError("after bindBuffer in displaypixel");*/
+
+
+
+    
+};
+
+void Renderer::render(const std::vector<rgb> image)
 {
     
         glViewport(0, 0, window_w/2, window_h);
@@ -371,11 +487,19 @@ void Renderer::render()
         CheckGLError("draw points call");
 
        
-
         glViewport (window_w/2, 0, window_w/2, window_h);
         glScissor(window_w/2, 0, window_w/2, window_h);
-        glClearColor(0.0f, 1.0f, 0.0f, 1.0f); // green
-        glClear(GL_COLOR_BUFFER_BIT);
+        //glClearColor(0.0f, 1.0f, 0.0f, 1.0f); // green
+
+        glUseProgram(rayProg);
+        CheckGLError("rayProg render()");
+        //glBindTexture(GL_TEXTURE_2D, texture);
+        CheckGLError("render() bindTexture call");
+        glPointSize(1);
+        glBindVertexArray(quadRayVAO);
+        CheckGLError("render() bindvertex quadrayVAO");
+        glDrawArrays(GL_POINTS, 0, 800*800);
+        CheckGLError("quad drawArrays call after ");
 
 
         processInput(window);
