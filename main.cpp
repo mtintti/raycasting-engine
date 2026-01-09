@@ -1,5 +1,4 @@
 
-
 #define GLAD_GL_IMPLEMENTATION
 #include <glad/glad.h>
 #define GLFW_INCLUDE_NONE
@@ -12,7 +11,6 @@
 #include <chrono>
 #include <iostream>
 #include <thread>
-
 
 #define INFOforDEBUG true
 #define Cell 72
