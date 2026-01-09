@@ -5,8 +5,8 @@
 #include "color.h"
 
 extern glm::vec2 playerTranslations[6];
-extern glm::vec2 playerPosition;
-extern glm::vec2 nextPlayerPosition;
+extern glm::vec3 playerPosition; // was glm::vec2
+extern glm::vec3 nextPlayerPosition;
 
 //extern std::vector<std::vector<double>> rcolor;
 //extern std::vector<std::vector<double>> gcolor;
@@ -40,6 +40,12 @@ public:
     glm::vec3 rayDirection;
     glm::vec3 originForRay;
     float discriminaatti; //original
+    //glm::vec2 sightline;
+    std::vector<glm::vec2> sightline;
+    //glm::vec2 sightlinedirection = {1.0f, 0.0f};
+    float sightlinedirection = 0.f;
+    float x = sightlinedirection; // rayX
+    float y = sightlinedirection; // rayY
     //uint32_t rgbColors;
     //float rcolors[800*800*3];
     //float gcolors[800*800*3];
