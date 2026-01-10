@@ -120,6 +120,7 @@ Renderer::Renderer(int window_w, int window_h)
 
 
 
+
 GLuint Renderer::Load(const char* path, GLenum type){
     std::ifstream file(path);
     std::stringstream ss;

@@ -42,10 +42,15 @@ public:
     float discriminaatti; //original
     //glm::vec2 sightline;
     std::vector<glm::vec2> sightline;
-    //glm::vec2 sightlinedirection = {1.0f, 0.0f};
-    float sightlinedirection = 0.f;
-    float x = sightlinedirection; // rayX
-    float y = sightlinedirection; // rayY
+    glm::vec2 previousPos = {-1, -1};
+    glm::vec2 currentPos={0,0};
+    float mouseSensitivity = 0.2f;
+    glm::vec2 sightlinedirection = {0.0f, 0.0f};
+    //float sightlinedirection = 0.f;
+    //float x = sightlinedirection; // rayX
+    //float y = sightlinedirection; // rayY
+
+
     //uint32_t rgbColors;
     //float rcolors[800*800*3];
     //float gcolors[800*800*3];
