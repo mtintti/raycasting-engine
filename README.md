@@ -1,10 +1,10 @@
 
 
-Tämä projekti on tehty harjoitukseksi graafiseen koodaukseen, pelimoottoreihin, reaaliaikaiseen renderöintiin (20+ FPS) sekä raycastingin opetteluun. Projektin ikkuna on jaettu OpenGL:ää käyttäen kahteen osaan, joissa on karttanäkymä ja raycast-näkymä ympyrästä.
+Tämä projekti on tehty harjoitukseksi graafiseen koodaukseen, pelimoottoreihin, reaaliaikaiseen renderöintiin (20+ FPS) sekä raycastingin opetteluun c++ käyttämällä. OpenGL:ää käyttämällä ikkuna on jaettu kahteen osaan, joissa on generoitu karttanäkymä ja raycast-näkymä testi ympyrästä.
 
-Vasemmalla puolella nähdään projektissa generoitu kartta ja pelaaja. Kartta koostuu 21 × 21 -kokoisesta matriisista, jossa on määritetty seinät, polut, alku ja loppu. Matriisista tehdään vertex-taulukko, jossa on asetettu jokaisen kartan ruudun kulmapisteet, jotka yhdistetään GPU:ssa kokonaiseksi kartaksi.
+Vasemmalla puolella nähdään projektissa generoitu kartta ja pelaaja. Kartta koostuu 21 × 21 -kokoisesta matriisista, jossa on määritetty seinät, polut, alku ja loppu. Matriisista tehdään vertex-taulukko, jossa on asetettu jokaisen kartan ruudun kulmapisteet ikkunassa, jotka yhdistetään GPU:ssa kokonaiseksi kartaksi.
 
-Pelaajan pisteestä generoidaan säteet havainnollistamaan pelaajan näkölinjaa. Pelaajan näkökentästä lisätään askeleittain säteitä niin kauan, kunnes ne löytävät seinän kartasta. Oikealla puolella ikkunaa on testikuva raycastatusta näkymästä, joka muodostaa pallon keskelle ruudulle, kun säteet osuvat siihen. Tulevaisuudessa testikuvan ray–object-leikkausten sijaan aion yhdistää pelaajan näkymän säteet ja käyttää niitä pseudo-3D-pelinäkymän tekemiseen.
+Pelaajan pisteestä generoidaan säteet havainnollistamaan pelaajan näkölinjaa. Pelaajan näkökentästä lisätään askeleittain säteitä kunnes ne löytävät seinän kartasta. Oikealla puolella ikkunaa on testikuva raycastatusta näkymästä, joka muodostaa pallon keskelle ruudulle, kun säteet osuvat siihen. Tulevaisuudessa testikuvan ray–object-leikkausten sijaan aion yhdistää pelaajan näkymän säteet ja käyttää niitä pseudo-3D-pelinäkymän tekemiseen.
 ```
 Koodi repon kansion selitys:
 /
@@ -20,5 +20,9 @@ Koodi repon kansion selitys:
 
 
 Demo video projektista:
-https://github.com/user-attachments/assets/65436342-abd1-455a-99fc-8650de82f7a3
+
+
+https://github.com/user-attachments/assets/dd2c8504-4b0f-4422-bdb1-931aac9a801d
+
+
 
