@@ -1,0 +1,6 @@
+
+#ignored files 
+*.pdb
+*.obj
+*.exe
+*.ilk

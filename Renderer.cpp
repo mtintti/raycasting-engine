@@ -9,6 +9,8 @@
 #include "Game.h"
 //#include "color.h"
 
+#include "glm/gtc/type_ptr.hpp" // rotation matrix
+
 GLFWwindow *window = nullptr;
 //float discriminaatti; if using renderer extern
 
@@ -89,7 +91,9 @@ Renderer::Renderer(int window_w, int window_h)
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true); // comment out if realised
 
     window = glfwCreateWindow(window_w, window_h, "Split view demo", NULL, NULL);
@@ -115,6 +119,7 @@ Renderer::Renderer(int window_w, int window_h)
     }
         
 }
+
 
 
 
@@ -200,6 +205,100 @@ GLuint Renderer::CreatePlayerShader(){
     std::cout << "pProgram Link was success!\n";
     return playerProg;
 };
+
+
+GLuint Renderer::CreateSightlineShader(){
+    GLuint svert = Load("Shaders/sightline.vert", GL_VERTEX_SHADER); 
+    GLuint sfrag = Load("Shaders/sightline.frag", GL_FRAGMENT_SHADER); 
+    std::cout << "svert sightlineshader ID = " << svert << "\n";
+    std::cout << "sfrag sightlineshader ID = " << sfrag << "\n";
+   
+    sightlineProg = glCreateProgram();
+    CheckGLError("create sightlineProg");
+    glAttachShader(sightlineProg, svert);
+    CheckGLError("attach svert");
+    glAttachShader(sightlineProg, sfrag);
+    CheckGLError("attach sfrag");
+    
+    
+    glLinkProgram(sightlineProg);
+    CheckGLError("link sightlineProg");
+    GLint linked;
+    glGetProgramiv(sightlineProg, GL_LINK_STATUS, &linked);
+    if (!linked) {
+        char log[1024];
+        glGetProgramInfoLog(sightlineProg, 1024, NULL, log);
+        std::cout << "sProgram Link was not success!\n" << log << "\n";
+    }
+    std::cout << "sProgram Link was success!\n";
+    return sightlineProg;
+};
+
+
+void Renderer::sightlineInit(){
+
+    /*glGenBuffers(1, &sightlinesvbo);
+    CheckGLError("sightlinesvbo");
+    std::cout <<"\n VBO ID: "<<sightlinesvbo << "\n";
+    glBindBuffer(GL_ARRAY_BUFFER, sightlinesvbo);
+    glBufferData(GL_ARRAY_BUFFER,sightline.size() * sizeof(glm::vec2), sightline.data(), GL_DYNAMIC_DRAW);
+    int size = 0;
+    glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
+    std::cout << "GL VBO buffer size: " << size << " bytes\n";
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    float sightlinevertex[] = {
+        0.0f,  0.0f, 0.1f, 0.0f
+        //playerPosition.x, playerPosition.y, 0.1f, 0.0f
+    };
+    glGenVertexArrays(1, &sightlineVAO);
+    glGenBuffers(1, &sightlineVBO);
+    glBindVertexArray(sightlineVAO);
+
+
+    /*glBindBuffer(GL_ARRAY_BUFFER, sightlineVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(sightlinevertex), sightlinevertex, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(7);
+    glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+    CheckGLError("drawSightline vao and vbo creation");
+
+    //  instance data tilemap:ille
+    glEnableVertexAttribArray(7);
+    glBindBuffer(GL_ARRAY_BUFFER, sightlinesvbo); // meidän translated vectori pisteet
+    glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glVertexAttribDivisor(7, 0); //on instanced vertex attribute.
+    glBindVertexArray(0);*/
+
+   
+    glGenVertexArrays(1, &sightlineVAO);
+    glGenBuffers(1, &sightlineVBO);
+
+    glBindVertexArray(sightlineVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, sightlineVBO);
+
+    glEnableVertexAttribArray(7);
+    glVertexAttribPointer(
+        7, 2, GL_FLOAT, GL_FALSE,
+        sizeof(glm::vec2),
+        (void*)0
+    );
+
+    glBindVertexArray(0);
+
+
+};
+
+void Renderer::updateSightline(const std::vector<glm::vec2> sightline) {
+    glBindBuffer(GL_ARRAY_BUFFER, sightlineVBO);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        sightline.size() * sizeof(glm::vec2),
+        sightline.data(),
+        GL_DYNAMIC_DRAW
+    );
+}
+
 
 
 GLuint Renderer::CreateRayQuadShader(){
@@ -309,7 +408,7 @@ void Renderer::updateColors(glm::vec3* colors)
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     CheckGLError("after bindBuffer in updateColors");
  
-}
+};
 
 
 GLuint Renderer::playerInit(){
@@ -391,6 +490,7 @@ void Renderer::init()
     CreateShader();
     CreatePlayerShader();
     CreateRayQuadShader();
+    CreateSightlineShader();
     if(translations->length() <0){
         std::cout <<"\n translations are not on renderer side!";
     };
@@ -458,7 +558,44 @@ void Renderer::displaypixel(const std::vector<rgb> image){
     
 };
 
-void Renderer::render(const std::vector<rgb> image)
+void Renderer::DebugDrawPoint(float x, float y, float size = 0.01f) {
+    glUseProgram(0);          // turn off shaders
+    glBindVertexArray(0);     // turn off VAOs (important!)
+    glDisable(GL_BLEND);
+    //std::cout << "\n debug drawpoint " << x << " "<< y;
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    glBegin(GL_QUADS);
+        glColor3f(1, 0, 0);
+        glVertex2f(x-size, y-size);
+        glVertex2f(x+size, y-size);
+        glVertex2f(x+size, y+size);
+        glVertex2f(x-size, y+size);
+    glEnd();
+}
+void Renderer::DebugDrawLine(float x1, float y1, float x2, float y2) {
+    glUseProgram(0);
+    glBindVertexArray(0);
+    glBegin(GL_LINES);
+        glColor3f(0, 1, 0);
+        glVertex2f(x1, y1);
+        glVertex2f(x2, y2);
+    glEnd();
+}
+
+void Renderer::DebugDrawLinepast(float x1, float y1, float x2, float y2) {
+    glUseProgram(0);
+    glBindVertexArray(0);
+    //std::cout << "\n debug drawline " << x1 << " "<< y1 <<" next -> "<< x2 << " " << y2;
+    glBegin(GL_LINES);
+        glColor3f(0, 1, 1);
+        glVertex2f(x1, y1);
+        glVertex2f(x2, y2);
+    glEnd();
+}
+
+void Renderer::render(const std::vector<rgb> image, std::vector<glm::vec2> sightline)
 {
     
         glViewport(0, 0, window_w/2, window_h);
@@ -486,10 +623,21 @@ void Renderer::render(const std::vector<rgb> image)
         glDrawArrays(GL_POINTS, 0, 2);
         CheckGLError("draw points call");
 
+        //updateSightline(sightline);
+        //CheckGLError("smaller renderer call for sightline -> screen");
+
+        glUseProgram(sightlineProg);
+        CheckGLError("use slightlineProg in updateSightline");
+        glBindVertexArray(sightlineVAO);
+        CheckGLError("using sightline.x and y in VAO");
+        glDrawArrays(GL_LINES, 0, sightline.size());
+        CheckGLError("drawing our sightline DrawArrays call");
+
        
         glViewport (window_w/2, 0, window_w/2, window_h);
         glScissor(window_w/2, 0, window_w/2, window_h);
         //glClearColor(0.0f, 1.0f, 0.0f, 1.0f); // green
+        
 
         glUseProgram(rayProg);
         CheckGLError("rayProg render()");
