@@ -20,11 +20,11 @@ int column = 21;
 
 void Maze::creation(int mazeSize)
 {
-    std::cout << "in Maze.creation()";
+    //std::cout << "in Maze.creation()";
     bool gone = false;
     tilemap.assign(row, std::vector<int>(column, 0));
 
-    std::cout << "in Maze.creation() past vector.. \n";
+    //std::cout << "in Maze.creation() past vector.. \n";
     const int first = 1; 
     const int rangeTo = 20;
 
@@ -33,22 +33,22 @@ void Maze::creation(int mazeSize)
     std::uniform_int_distribution<int> distr(first, rangeTo);
     int start = distr(generator);
     tilemap[0][start] = 2;
-    std::cout << " maze start: (0, " << start << ")\n";
+    //std::cout << " maze start: (0, " << start << ")\n";
     int end = distr(generator);
     tilemap[row - 1][end] = 3;
-    std::cout << " maze end: (" << row - 1 << ", " << end << ")\n";
+    //std::cout << " maze end: (" << row - 1 << ", " << end << ")\n";
 
-    std::cout << " .. and start/end set \n";
+    //std::cout << " .. and start/end set \n";
     for (int i = 0; i < row; i++)
     {
         for (int j = 0; j < column; j++)
         {
-            std::cout << tilemap[i][j] << " ";
+            //std::cout << tilemap[i][j] << " ";
         }
-        std::cout << "\n";
+        //std::cout << "\n";
     }
-    std::cout << "--start/end set --\n";
-    std::cout<< "tilemap is done?? "<<tilemapDone;
+    //std::cout << "--start/end set --\n";
+    //std::cout<< "tilemap is done?? "<<tilemapDone;
     
     std::vector<std::vector<int>> possiblePoints(0, std::vector<int>(2));
 
@@ -147,14 +147,14 @@ void Maze::creation(int mazeSize)
     tilemap[row - 1][end] = 3;
 
 
-    std::cout << "\nGenerated Maze:\n";     
+    //std::cout << "\nGenerated Maze:\n";     
     for (int i = 0; i < row; i++)
     {
         for (int j = 0; j < column; j++)
         {       
-            std::cout << tilemap[i][j] << " ";   
+            //std::cout << tilemap[i][j] << " ";   
         }
-        std::cout << "\n";
+        //std::cout << "\n";
         }    
   
     // laitetaan tilemap value numeron mukaan oikeat värit colors indexin numeron paikalle
@@ -192,9 +192,9 @@ void Maze::creation(int mazeSize)
             translations[indx++] = t;
         };
     };
-    std::cout <<"\n translations are done!";
+    //std::cout <<"\n translations are done!";
     
 
     tilemapDone = true;
-    std::cout<< "\n tilemap is done?? "<<tilemapDone;
+    //std::cout<< "\n tilemap is done?? "<<tilemapDone;
 }

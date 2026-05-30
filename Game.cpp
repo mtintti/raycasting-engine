@@ -16,9 +16,9 @@ glm::vec3 playerPosition;
 Game::Game(int window_w, int window_h, int mazeSize, int gameSize)
     : renderer(window_w, window_h), image(w * h)
 {
-    std::cout << "Game initialized with window size..." << std::endl;
+    /*std::cout << "Game initialized with window size..." << std::endl;
     std::cout << "game projection initialized with size " << gameSize << " x " << gameSize << "\n";
-    std::cout << "Game initialized with maze size " << mazeSize << " x " << mazeSize << std::endl;
+    std::cout << "Game initialized with maze size " << mazeSize << " x " << mazeSize << std::endl;*/
     maze.creation(mazeSize);
     // image[w*h];
     if (tilemapDone == true)
@@ -29,9 +29,9 @@ Game::Game(int window_w, int window_h, int mazeSize, int gameSize)
 
 void Game::init()
 {
-    std::cout << "in game.init() where entities are done";
+    //std::cout << "in game.init() where entities are done";
 
-    std::cout << "game window done -> next data init ";
+    //std::cout << "game window done -> next data init ";
     playerinit();
     renderer.init();
 };
@@ -47,11 +47,11 @@ void Game::playerinit()
             indNum++;
             if (tilemap[i][j] == 2)
             {
-                std::cout << "\n tilemap 2/start " << tilemap[i][j] << " found in " << i << " , " << j;
-                std::cout << "\n this makes our camera/player pos " << i + 1 << " , " << j << " in " << tilemap[i + 1][j];
+                //std::cout << "\n tilemap 2/start " << tilemap[i][j] << " found in " << i << " , " << j;
+                //std::cout << "\n this makes our camera/player pos " << i + 1 << " , " << j << " in " << tilemap[i + 1][j];
                 camera = {i + 1, j, 0};
-                std::cout << "\n camera vec3 = " << camera.x << "," << camera.y << "," << camera.z;
-                std::cout << "\n index for transformations " << indNum;
+                //std::cout << "\n camera vec3 = " << camera.x << "," << camera.y << "," << camera.z;
+                //std::cout << "\n index for transformations " << indNum;
                 break;
             }
         }
@@ -72,9 +72,9 @@ void Game::playerinit()
     playerPosition.y = 1.0f - playerRow * playersize - offset;
     playerPosition.z = 0;
 
-    std::cout << "\nPlayer world pos: "
+    /*std::cout << "\nPlayer world pos: "
               << playerPosition.x << ", "
-              << playerPosition.y << "\n";
+              << playerPosition.y << "\n";*/
 
     lastRow = playerRow;
     lastColumn = playerCol;
@@ -84,6 +84,7 @@ void Game::playerinit()
     renderer.updateColors(colors);
     renderer.playerInit();
     renderer.sightlineInit();
+    buildVerticesQuad();
 };
 int debug = 0;
 int ind = 0;
@@ -94,11 +95,29 @@ void Game::colorAddNeighbours(float up, float right, float south, float left, in
     {
         c = {0.1, 0.5, 0.5};
         colors[ourInstIndex] = c;
-        std::cout << "\n index of color after change " << ourInstIndex << " in: " << colors[ourInstIndex].r << " , " << colors[ourInstIndex].b << " , " << colors[ourInstIndex].g;
+        //std::cout << "\n index of color after change " << ourInstIndex << " in: " << colors[ourInstIndex].r << " , " << colors[ourInstIndex].b << " , " << colors[ourInstIndex].g;
     };
     renderer.updateColors(colors);
 };
 bool renderProjection = true;
+
+void Game::buildVerticesQuad()
+{
+    // fills the global verticesQuad[2 * w * h] with NDC grid positions
+    // matching the image[] pixel layout (row-major, top-left = (-1, 1))
+    int i = 0;
+    for (int py = 0; py < h; py++)
+    {
+        for (int px = 0; px < w; px++)
+        {
+            // map px in [0, w) → NDC x in [-1, 1]
+            verticesQuad[2*i]     =  (2.0f * px / (float)(w - 1)) - 1.0f;
+            // map py in [0, h) → NDC y in [1, -1]  (flip Y so row 0 = top)
+            verticesQuad[2*i + 1] =  1.0f - (2.0f * py / (float)(h - 1));
+            i++;
+        }
+    }
+}
 
 bool Game::update(double dt)
 {
@@ -176,7 +195,8 @@ bool Game::update(double dt)
     };
     previousPos.x = currentPos.x;
     previousPos.y = currentPos.y;
-    projection();
+    //projection();
+
     // std::cout <<"\n mous pos: x" << previousPos.x << " , y " << previousPos.y;
 
     // opengl lookaatio taas, jos seuraava column tai row plus/miinus muunnos.
@@ -252,17 +272,17 @@ bool Game::update(double dt)
             if (nextmovedRow != lastRow || nextmovedColumn != lastColumn)
             {
                 // debug aina kun liikutaan seuraavaan celliin.
-                std::cout << "\n lastrow: " << lastRow << " -> next: " << nextmovedRow;
-                std::cout << "\n lastcolumn: " << lastColumn << " -> next: " << nextmovedColumn;
+                /*std::cout << "\n lastrow: " << lastRow << " -> next: " << nextmovedRow;
+                std::cout << "\n lastcolumn: " << lastColumn << " -> next: " << nextmovedColumn;*/
                 lastRow = nextmovedRow;
                 lastColumn = nextmovedColumn;
                 renderProjection = true;
-                std::cout << "\n tilemap wdsa: w" << tilemap[nextmovedRow][nextmovedColumn + 1] << ", d: " << tilemap[nextmovedRow + 1][nextmovedColumn] << ", s: " << tilemap[nextmovedRow][nextmovedColumn - 1] << ", a: " << tilemap[nextmovedRow - 1][nextmovedColumn];
+                /*std::cout << "\n tilemap wdsa: w" << tilemap[nextmovedRow][nextmovedColumn + 1] << ", d: " << tilemap[nextmovedRow + 1][nextmovedColumn] << ", s: " << tilemap[nextmovedRow][nextmovedColumn - 1] << ", a: " << tilemap[nextmovedRow - 1][nextmovedColumn];
                 std::cout << "\n tilemap row: " << nextmovedRow << " col: " << nextmovedColumn;
                 std::cout << "\n tilemap we get??: " << tilemap[nextmovedRow][nextmovedColumn] << " playernextpos.x " << nextPlayerPosition.x << " , y: " << nextPlayerPosition.y;
                 std::cout << "\n image size: " << image.size();
                 std::cout << "\n image : " << image[500].red << " " << image[500].green << " " << image[500].blue;
-                std::cout << "\n neighbours: " << up << " " << left << " " << south << " " << left;
+                std::cout << "\n neighbours: " << up << " " << left << " " << south << " " << left;*/
                 colorAddNeighbours(up, right, south, left, ourInstIndex);
                 // projection();
                 renderer.GenerateQuadForRay(image);
@@ -307,144 +327,100 @@ void normalizeAngle(float &angle)
 void Game::projection()
 {
 
-    // if want to use pixel use the for two loops below
-    // viewports horz and vert vectors
-    int image_width = 800;
-    int image_height = 800;
-    int projectiondebug = 0;
+    // uus sightlines ja oikea projection oikealle puolelle screeniä
+    const int image_width  = w; 
+    const int image_height = h;
 
-    // rayAngle = playerAngle;
+    int   numRays     = image_width;         
+    float fov         = 0.785f * 2.0f;        
+    float halfFov     = fov * 0.5f;
+    float maxRayLen   = 3.0f;
+    float stepSize    = 0.005f;               
 
-    /* sightlines pelaajan näkykulmaa varten*/
-    int cellSize = (window_h - 20) / tilemap[0].size();
-    int raysNumber = 40; // on myös field of view playeristä
-    float spreadedOut = 0.785f; // pi 3.14159 / 4  on yhtä kuin = spreadedOut
-    float maxRayLength = 1.5f;  
-    float stepSize = 0.02f;     // ray marching precision
+    
+    sightline.clear();
+    sightline.reserve(numRays * 2);
 
-    sightline.reserve(raysNumber);
-
-    for (int i = 0; i < raysNumber; i++)
+    
+    for (int col = 0; col < numRays; col++)
     {
-        if (sightline.size() > raysNumber * 3)
+        
+        float t         = (float)col / (float)(numRays - 1);   // 0..1
+        float rayAngle  = playerAngle - halfFov + t * fov;
+
+        
+        while (rayAngle < 0)       rayAngle += 2.0f * pi;
+        while (rayAngle > 2.0f*pi) rayAngle -= 2.0f * pi;
+
+        glm::vec2 pos   = glm::vec2(playerPosition.x, playerPosition.y);
+        glm::vec2 dir   = glm::vec2(std::cos(rayAngle), std::sin(rayAngle));
+        glm::vec2 point = pos;
+        float traveled  = 0.0f;
+        bool  hit       = false;
+
+        while (traveled < maxRayLen)
         {
-            sightline.clear();
-        };
-        float offset = ((i / (float)(raysNumber - 1)) - 0.5f) * spreadedOut * 2.0f; //
-        float raydirection = sightlinedirection.x + sightlinedirection.y + offset;
-
-        glm::vec2 startPoint = playerPosition;
-        glm::vec2 raysPoint = startPoint;
-
-        // std::cout << "\n sight x tile: " << lastRow;
-        // std::cout << "\n sight y tile: " << lastColumn;
-        // std::cout << "\n last row x and last col y: " << tilemap[nextmovedRow][nextmovedColumn];
-
-        float traveled = 0.0f;
-
-        while (traveled < maxRayLength)
-        {
-            raysPoint.x += std::cos(raydirection) * stepSize;
-            raysPoint.y += std::sin(raydirection) * stepSize;
+            point.x += dir.x * stepSize;
+            point.y += dir.y * stepSize;
             traveled += stepSize;
 
-            // worldistä → tile muutto
-            int tileX = int((raysPoint.x + 1.0f) * 0.5f * column);
-            int tileY = int((1.0f - (raysPoint.y + 1.0f) * 0.5f) * row);
+            // NDC → tile index  (same formula kuin muualla projektissa)
+            int tileX = int((point.x + 1.0f) * 0.5f * column);
+            int tileY = int((1.0f - (point.y + 1.0f) * 0.5f) * row);
 
             if (tileX < 0 || tileX >= column || tileY < 0 || tileY >= row)
                 break;
 
-            if (tilemap[tileY][tileX] == 0)
+                // seinä löydetty
+            if (tilemap[tileY][tileX] == 0)  
+            {
+                hit = true;
                 break;
+            }
         }
 
-        sightline.push_back(startPoint);
-        sightline.push_back(raysPoint);
-        // std::cout << "\n size of sightline: " << sightline.size();
-    }; // sightline end here / *
-    // float tileSize = playersize;
+        sightline.push_back(pos);
+        sightline.push_back(point);
 
-    /* game right side projection render*/
-      // Render
-    
-    double xyfact = 1.0 / (image_height / 2.0); //used in ndc screen coords
-    int i = 0;
-    for (int y = 0; y < image_height; y++) {
-        for (int x = 0; x < image_width; x++) {
-            
-            //nX = (2.0 * (x + 0.5) / image_width) -1.0;
-            nY = (y * xyfact) -1.0; 
-            nX = (x * xyfact) -1.0; 
-            //nY = 1.0 - (2.0 * (y + 0.5) / image_height);
-            verticesQuad[2* i] = nX; // saving our vertex position for invidual points
-            verticesQuad[2*i +1] = nY;
-            if(i < w*h){
-                i++;
-            };
-            
+        float angleDiff = rayAngle - playerAngle;
+        while (angleDiff < -pi) angleDiff += 0.2f * pi; // was 2.0, 0.5
+        while (angleDiff >  pi) angleDiff -= 0.2f * pi;
+        float perpDist  = hit ? (traveled * std::cos(angleDiff)) : maxRayLen;
+        perpDist        = std::max(perpDist, 0.001f);   // guard div/0
 
-            glm::vec2 coord = {nX, nY};
-            
-            
-            glm::vec3 originForRay(0.0f, 0.0f, 2.0f); // if players position use nextmovedrow and nextmovedcolumn
-            //glm::vec3 rayDirection(playerPosition.x, playerPosition.y, -1.0f); //origin was -> -1.0f, joka on minne suuntaan our ray menee
-            //glm::vec3 rayDirection = glm::normalize(glm::vec3(coord.x, coord.y, -2.0f)); //last used
-            glm::vec3 hittablespos(coord.x, coord.y, 0.0f); 
-            glm::vec3 rayDirection(originForRay - hittablespos);
-            
-            float radius = 0.5f;
-            
-            // a = ray origin, b = ray direction, r = radius, t = ray hit distance
+        float wallHeight  = (1.0f / perpDist) * (image_height * 0.3f); // was 1.0f, all *
+        int   wallTop     = (int)((image_height * 0.3f) - wallHeight * 0.3f);
+        int   wallBottom  = (int)((image_height * 0.3f) + wallHeight * 0.3f);
+        wallTop           = std::max(wallTop,    0);
+        wallBottom        = std::min(wallBottom, image_height - 1);
 
-            //float a = rayDirection.x * rayDirection.x + rayDirection.y + rayDirection.y * rayDirection.z + rayDirection.z; aka glm::dot.
-            float a = glm::dot(rayDirection, rayDirection);
-            float b = 2.0f * glm::dot(originForRay, rayDirection);
-            float c = glm::dot(originForRay, originForRay) - radius * radius;
+        // shade wall määritellään pituudella: lähempänä on kirkkaampaa vihreää
+        float shade = std::max(0.0f, 0.4f - perpDist / maxRayLen);
 
-
-            discriminaatti = b * b - 4.0f * a *c;
-            
-            if(discriminaatti < 0.0f){
-                setpixel(x,y, 0.5f, 0.5f, 0.5f);
-                missed++;
+        for (int row_px = 0; row_px < image_height; row_px++)
+        {
+            if (row_px < wallTop)
+            {
+                // katto, harmaa
+                setpixel(col, row_px, 0.15f, 0.15f, 0.15f);
             }
-            if(discriminaatti == 0.0f || discriminaatti > 0.0f){
-                float Discr = sqrt(discriminaatti);
-                float q = (b > 0) ? 
-                -0.5 * (b + Discr) : -0.5 * (b- Discr);
-                float x0 = q / a; // near hit with ray (t)
-                float x1 = c / q; // far hit with ray (t)
-                //if(x0 > x1){
-                hitted++;
-                //double dist = (originForRay - coord.x); // distance for trying to set our pixels :>
-                double dist = (x0 + x1); // distance for trying to set our pixels :>
-
-                setpixel(x,y, 0.0f, 0.5f, 0.5f); // if hit at all set red color 
-
-            };
-            
-        };
-    };
-    //std::cout << "\n hit: " << hitted;
-    //std::cout << "\n missed: " << missed;
-
-    projectionisDone = true;
+            else if (row_px <= wallBottom)
+            {   // seinä, vihreä
+                setpixel(col, row_px, 0.0f, shade, 0.0f);
+            }
+            else
+            {
+                // lattia — vähän vaaleampi harmaa kuin katto
+                setpixel(col, row_px, 0.25f, 0.25f, 0.25f);
+            }
+        }
+    }
 };
 
 void Game::render()
 {
-
-    if (renderProjection == true)
-    {
-
-        projection();
-        std::cout << "\n projection true call";
-        std::cout << "\n start init renderer quad call";
-        renderer.GenerateQuadForRay(image);
-        renderProjection = false;
-    };
-    // projection();
+    projection();
+    renderer.GenerateQuadForRay(image);
     renderer.updateSightline(sightline);
     renderer.render(image, sightline);
 };

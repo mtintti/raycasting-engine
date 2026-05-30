@@ -79,7 +79,7 @@ void APIENTRY glDebugOutput(GLenum source,
 
 Renderer::Renderer(int window_w, int window_h)
 {
-    std::cout << "Game initialized with window size " << window_w << " x " << window_h << std::endl;
+    //std::cout << "Game initialized with window size " << window_w << " x " << window_h << std::endl;
 
     if (!glfwInit())
     {
@@ -129,7 +129,7 @@ GLuint Renderer::Load(const char* path, GLenum type){
     ss << file.rdbuf();
 
     std::string src = ss.str();
-    std::cout << "\n file from load src" << src << "\n";
+    //std::cout << "\n file from load src" << src << "\n";
     const char* cstr = src.c_str();
     if (!file.is_open()) {
         std::cout << "Could be not openned shader file: " << path << "\n";
@@ -154,8 +154,8 @@ GLuint Renderer::CreateShader(){
     
     GLuint vert = Load("Shaders/Genom.vert", GL_VERTEX_SHADER); 
     GLuint frag = Load("Shaders/Genom.frag", GL_FRAGMENT_SHADER); 
-    std::cout << "vert shader ID = " << vert << "\n";
-    std::cout << "frag shader ID = " << frag << "\n";
+    //std::cout << "vert shader ID = " << vert << "\n";
+    //std::cout << "frag shader ID = " << frag << "\n";
 
    
     shaderProg = glCreateProgram();
@@ -173,7 +173,7 @@ GLuint Renderer::CreateShader(){
         glGetProgramInfoLog(shaderProg, 1024, NULL, log);
         std::cout << "SProgram Link was not success!\n" << log << "\n";
     }
-    std::cout << "SProgram Link was success!\n";
+    //std::cout << "SProgram Link was success!\n";
     
     return shaderProg;
 
@@ -182,8 +182,8 @@ GLuint Renderer::CreateShader(){
 GLuint Renderer::CreatePlayerShader(){
     GLuint pvert = Load("Shaders/player.vert", GL_VERTEX_SHADER); 
     GLuint pfrag = Load("Shaders/player.frag", GL_FRAGMENT_SHADER); 
-    std::cout << "vert playershader ID = " << pvert << "\n";
-    std::cout << "frag playershader ID = " << pfrag << "\n";
+    //std::cout << "vert playershader ID = " << pvert << "\n";
+    //std::cout << "frag playershader ID = " << pfrag << "\n";
    
     playerProg = glCreateProgram();
     CheckGLError("create playerProg");
@@ -202,7 +202,7 @@ GLuint Renderer::CreatePlayerShader(){
         glGetProgramInfoLog(playerProg, 1024, NULL, log);
         std::cout << "pProgram Link was not success!\n" << log << "\n";
     }
-    std::cout << "pProgram Link was success!\n";
+    //std::cout << "pProgram Link was success!\n";
     return playerProg;
 };
 
@@ -210,8 +210,8 @@ GLuint Renderer::CreatePlayerShader(){
 GLuint Renderer::CreateSightlineShader(){
     GLuint svert = Load("Shaders/sightline.vert", GL_VERTEX_SHADER); 
     GLuint sfrag = Load("Shaders/sightline.frag", GL_FRAGMENT_SHADER); 
-    std::cout << "svert sightlineshader ID = " << svert << "\n";
-    std::cout << "sfrag sightlineshader ID = " << sfrag << "\n";
+    //std::cout << "svert sightlineshader ID = " << svert << "\n";
+    //std::cout << "sfrag sightlineshader ID = " << sfrag << "\n";
    
     sightlineProg = glCreateProgram();
     CheckGLError("create sightlineProg");
@@ -230,46 +230,12 @@ GLuint Renderer::CreateSightlineShader(){
         glGetProgramInfoLog(sightlineProg, 1024, NULL, log);
         std::cout << "sProgram Link was not success!\n" << log << "\n";
     }
-    std::cout << "sProgram Link was success!\n";
+    //std::cout << "sProgram Link was success!\n";
     return sightlineProg;
 };
 
 
 void Renderer::sightlineInit(){
-
-    /*glGenBuffers(1, &sightlinesvbo);
-    CheckGLError("sightlinesvbo");
-    std::cout <<"\n VBO ID: "<<sightlinesvbo << "\n";
-    glBindBuffer(GL_ARRAY_BUFFER, sightlinesvbo);
-    glBufferData(GL_ARRAY_BUFFER,sightline.size() * sizeof(glm::vec2), sightline.data(), GL_DYNAMIC_DRAW);
-    int size = 0;
-    glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-    std::cout << "GL VBO buffer size: " << size << " bytes\n";
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    float sightlinevertex[] = {
-        0.0f,  0.0f, 0.1f, 0.0f
-        //playerPosition.x, playerPosition.y, 0.1f, 0.0f
-    };
-    glGenVertexArrays(1, &sightlineVAO);
-    glGenBuffers(1, &sightlineVBO);
-    glBindVertexArray(sightlineVAO);
-
-
-    /*glBindBuffer(GL_ARRAY_BUFFER, sightlineVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(sightlinevertex), sightlinevertex, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(7);
-    glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
-    CheckGLError("drawSightline vao and vbo creation");
-
-    //  instance data tilemap:ille
-    glEnableVertexAttribArray(7);
-    glBindBuffer(GL_ARRAY_BUFFER, sightlinesvbo); // meidän translated vectori pisteet
-    glVertexAttribPointer(7, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glVertexAttribDivisor(7, 0); //on instanced vertex attribute.
-    glBindVertexArray(0);*/
-
    
     glGenVertexArrays(1, &sightlineVAO);
     glGenBuffers(1, &sightlineVBO);
@@ -305,8 +271,8 @@ GLuint Renderer::CreateRayQuadShader(){
     
     GLuint rayvert = Load("Shaders/ray.vert", GL_VERTEX_SHADER); 
     GLuint rayfrag = Load("Shaders/ray.frag", GL_FRAGMENT_SHADER); 
-    std::cout << "vert shader ID = " << rayvert << "\n";
-    std::cout << "frag shader ID = " << rayfrag << "\n";
+    //std::cout << "vert shader ID = " << rayvert << "\n";
+    //std::cout << "frag shader ID = " << rayfrag << "\n";
 
    
     rayProg = glCreateProgram();
@@ -324,7 +290,7 @@ GLuint Renderer::CreateRayQuadShader(){
         glGetProgramInfoLog(rayProg, 1024, NULL, log);
         std::cout << "RProgram Link was not success!\n" << log << "\n";
     }
-    std::cout << "RProgram Link was success!\n";
+    //std::cout << "RProgram Link was success!\n";
     
     return rayProg;
 
@@ -335,12 +301,12 @@ GLuint Renderer::GenerateVertexBuffer(){
     
     glGenBuffers(1, &vbo);
     CheckGLError("vbo");
-    std::cout <<"\n VBO ID: "<<vbo << "\n";
+    //std::cout <<"\n VBO ID: "<<vbo << "\n";
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER,sizeof(glm::vec2) * 441, &translations[0], GL_STATIC_DRAW);
     int size = 0;
     glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &size);
-    std::cout << "GL VBO buffer size: " << size << " bytes\n";
+    //std::cout << "GL VBO buffer size: " << size << " bytes\n";
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 
@@ -395,8 +361,8 @@ GLuint Renderer::GenerateVertexArray(){
 
 void Renderer::updateColors(glm::vec3* colors)
 {
-    std::cout <<"\n";
-    std::cout << "\n in updateColors in Renderer class";
+    //std::cout <<"\n";
+    //std::cout << "\n in updateColors in Renderer class";
     glBindVertexArray(quadVAO);
     glBindBuffer(GL_ARRAY_BUFFER, colour);
     CheckGLError("quadVAO and color buff bind in updateColors");
@@ -446,38 +412,27 @@ GLuint Renderer::GenerateQuadForRay(const std::vector<rgb> image){
             missedr++;
         };
     };
-    std::cout << "\n from render hit: " << hittedr;
-    std::cout << "\n from render missed: " << missedr;
-
-    //unsigned int quadRayVAO, quadRayVBO;
-    glGenBuffers(1, &quadRayVBO); // vertexQuad points
+    
+    glGenBuffers(1, &quadRayVBO); 
     glBindBuffer(GL_ARRAY_BUFFER, quadRayVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesQuad), verticesQuad, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, quadRayVBO);
     CheckGLError("quadrayVAO bind creation calls");
 
-    // one x and y quadVertex float value with a stride of 2 is one pixel point
     glGenVertexArrays(1, &quadRayVAO);
-    glBindVertexArray(quadRayVAO); // overall used for shader
+    glBindVertexArray(quadRayVAO);
     glBindBuffer(GL_ARRAY_BUFFER, quadRayVBO);
     glEnableVertexAttribArray(5);
     glVertexAttribPointer(5,2,GL_FLOAT,GL_FALSE, 2 * sizeof(float), 0);
     CheckGLError("quadrayVAO vertex point call");
     
-    // invidual rgb colors for pixels sent to shaders
-    // setting every 3 float values as one pixels colors
+
     glGenBuffers(1, &inviRays);
     glBindBuffer(GL_ARRAY_BUFFER, inviRays);
     glBufferData(GL_ARRAY_BUFFER, image.size() * sizeof(rgb), image.data(), GL_DYNAMIC_DRAW);
     glEnableVertexAttribArray(6);
-    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),0); // or offset as -> (void*)(2* sizeof(float))
+    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),0); 
     CheckGLError("quadrayVAO image rgb colors attached");
-
-    /*glEnableVertexAttribArray(6); for texture
-    glVertexAttribPointer(6, 2, GL_FLOAT, GL_FALSE,4 * sizeof(float),  (void*)(2 * sizeof(float)));
-    glBindVertexArray(0); 
-    CheckGLError("quadrayVAO texture coordinates set");*/
-
     
     return quadRayVAO;
 
@@ -492,23 +447,22 @@ void Renderer::init()
     CreateRayQuadShader();
     CreateSightlineShader();
     if(translations->length() <0){
-        std::cout <<"\n translations are not on renderer side!";
+        //std::cout <<"\n translations are not on renderer side!";
     };
     if(translations->length > 0){
-        std::cout <<"\n translations are in renderer side " << translations->length() <<" ";
+        //std::cout <<"\n translations are in renderer side " << translations->length() <<" ";
         for(int i = 0; i < translations->length(); i++){
             std::cout <<"t = " << i  << translations[i].x << " , " << translations[i].y;
         }
     };
     GenerateVertexBuffer();
     GenerateVertexArray();
-    std::cout << "\n render init";
+    /*std::cout << "\n render init";
     std::cout << "\n projection done -> showing in render";
-    std::cout <<"player pos for uniform "<< playerPosition.x << " , " << playerPosition.y;
+    std::cout <<"player pos for uniform "<< playerPosition.x << " , " << playerPosition.y;*/
 
     
 };
-//extern float discriminaatti;
 
 
 
@@ -539,28 +493,12 @@ void Renderer::displaypixel(const std::vector<rgb> image){
     glBindFramebuffer(GL_FRAMEBUFFER, texture);
     glTexImage2D(GL_TEXTURE_2D, 0,GL_RGB, 800, 800, 0,GL_RGB, GL_UNSIGNED_BYTE, image.data());
     glGenerateMipmap(GL_TEXTURE_2D);
-
-    /*std::cout <<"\n";
-    std::cout << "\n in displaypixel in Renderer class";
-    glBindVertexArray(quadRayVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, inviRays);
-    CheckGLError("quadVAO and invidual ray buff bind in displaypixel");
-    glBufferSubData(GL_ARRAY_BUFFER,0,sizeof(image),&image[0]);
-    CheckGLError("after bufferSubData in displaypixel");
-    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, sizeof(image),0);
-    CheckGLError("after vertexAttrib in displaypixel");
-    glVertexAttribDivisor(6,1);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    CheckGLError("after bindBuffer in displaypixel");*/
-
-
-
     
 };
 
 void Renderer::DebugDrawPoint(float x, float y, float size = 0.01f) {
-    glUseProgram(0);          // turn off shaders
-    glBindVertexArray(0);     // turn off VAOs (important!)
+    glUseProgram(0);         
+    glBindVertexArray(0);    
     glDisable(GL_BLEND);
     //std::cout << "\n debug drawpoint " << x << " "<< y;
     glMatrixMode(GL_MODELVIEW);
@@ -623,9 +561,6 @@ void Renderer::render(const std::vector<rgb> image, std::vector<glm::vec2> sight
         glDrawArrays(GL_POINTS, 0, 2);
         CheckGLError("draw points call");
 
-        //updateSightline(sightline);
-        //CheckGLError("smaller renderer call for sightline -> screen");
-
         glUseProgram(sightlineProg);
         CheckGLError("use slightlineProg in updateSightline");
         glBindVertexArray(sightlineVAO);
@@ -636,12 +571,10 @@ void Renderer::render(const std::vector<rgb> image, std::vector<glm::vec2> sight
        
         glViewport (window_w/2, 0, window_w/2, window_h);
         glScissor(window_w/2, 0, window_w/2, window_h);
-        //glClearColor(0.0f, 1.0f, 0.0f, 1.0f); // green
         
 
         glUseProgram(rayProg);
         CheckGLError("rayProg render()");
-        //glBindTexture(GL_TEXTURE_2D, texture);
         CheckGLError("render() bindTexture call");
         glPointSize(1);
         glBindVertexArray(quadRayVAO);

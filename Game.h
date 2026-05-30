@@ -7,19 +7,12 @@
 extern glm::vec2 playerTranslations[6];
 extern glm::vec3 playerPosition; // was glm::vec2
 extern glm::vec3 nextPlayerPosition;
-
-//extern std::vector<std::vector<double>> rcolor;
-//extern std::vector<std::vector<double>> gcolor;
-//extern std::vector<std::vector<double>> bcolor;
-//extern std::vector<uint32_t> image;
 extern bool renderProjection;
 extern bool projectionisDone;
 extern std::vector<rgb> image;
 
 class Game{
     private:
-    //var
-    //func
     void init();
 
     void playerinit();
@@ -38,7 +31,6 @@ public:
     int lastRow = 0;    // for less print statement only if change row
     int lastColumn = 0; // for less print statement only if change column
     glm::vec3 rayDirection;
-    //glm::vec3 originForRay;
     glm::vec3 origin; // where our player is currently in 3d world
     glm::vec3 sphereCenter;
     glm::vec3 cameraRight;
@@ -73,46 +65,21 @@ public:
     glm::vec2 startPoint;
     glm::vec2 raysPoint;
     float traveled;
-
-    glm::vec3 raydirection;
-    //float raydirection;
-    //float sightlinedirection = 0.f;
-    //float x = sightlinedirection; // rayX
-    //float y = sightlinedirection; // rayY
-
-
-    //uint32_t rgbColors;
-    //float rcolors[800*800*3];
-    //float gcolors[800*800*3];
-    //float bcolors[800*800*3];
-    
+    glm::vec3 raydirection;    
     static constexpr int w = 800;
     static constexpr int h = 800;
-    //std::vector<double> image;
     std::vector<rgb> image;
-    
-    /*struct rgb {
-        uint32_t red;
-        uint32_t green;
-        uint32_t blue;
-    };*/
-    
-    
-    
-    //uint32_t image[w*h];
-    
-    //glm::vec3 image;
     double nX = 0; 
     double nY = 0;
 
     glm::vec3 color;
-    
+
+    void buildVerticesQuad();
+
     // func
     bool update(double dt);
     float distance(float ax, float ay, float bx, float by, float ang);
-    // uint32_t pixel(glm::vec2 coord); //coords for projection picture creation
     void projection();
-    //uint32_t rayedImage(float discriminaatti); // temp mihin rayed kuva menee -> jos renderer puoleen??
     void render();
     
     void setpixel(int x, int y, float r, float g, float b); // rgb uint32_t

@@ -20,7 +20,7 @@
 #define gameSize 20
 
 bool running = true;
-int window_w = 1200;
+int window_w = 1500; // 1200;
 int window_h = 800;
 
 int main(int argc, char **argv)
@@ -61,11 +61,11 @@ int main(int argc, char **argv)
         elapsedSecondsInTotal += elapsed / 1000000000.0;
         if (elapsedSecondsInTotal >= 1.0)
         {
-            std::cout << "----\n";
+            //std::cout << "----\n";
             std::cout << "fps " << double(invidualframe) / elapsedSecondsInTotal << "\n";
             elapsedSecondsInTotal = 0.0;
             invidualframe = 0;
-            std::cout << "----\n";
+            //std::cout << "----\n";
         }
 #endif
         std::this_thread::sleep_for(std::chrono::microseconds(500));
