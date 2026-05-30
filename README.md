@@ -4,7 +4,7 @@ Tämä projekti on tehty harjoitukseksi graafiseen koodaukseen, pelimoottoreihin
 
 Vasemmalla puolella nähdään projektissa generoitu kartta ja pelaaja. Kartta koostuu 21 × 21 -kokoisesta matriisista, jossa on määritetty seinät, polut, alku ja loppu. Matriisista tehdään vertex-taulukko, jossa on asetettu jokaisen kartan ruudun kulmapisteet ikkunassa, jotka yhdistetään GPU:ssa kokonaiseksi kartaksi.
 
-Pelaajan pisteestä generoidaan säteet havainnollistamaan pelaajan näkölinjaa. Pelaajan näkökentästä lisätään askeleittain säteitä kunnes ne löytävät seinän kartasta. Oikealla puolella ikkunaa on testikuva raycastatusta näkymästä, joka muodostaa pallon keskelle ruudulle, kun säteet osuvat siihen. Tulevaisuudessa testikuvan ray–object-leikkausten sijaan aion yhdistää pelaajan näkymän säteet ja käyttää niitä pseudo-3D-pelinäkymän tekemiseen.
+Pelaajan pisteestä generoidaan säteet havainnollistamaan pelaajan näkölinjaa. Pelaajan näkökentästä lisätään askeleittain säteitä kunnes ne löytävät seinän kartasta. Oikealla puolella ikkunaa on pseudo-3D-pelinäkymä pelaajan näkykulmasta.
 ```
 Koodi repon kansion selitys:
 /
@@ -21,8 +21,9 @@ Koodi repon kansion selitys:
 
 Demo video projektista:
 
+https://github.com/user-attachments/assets/a32b6e9b-ccd5-4fa9-b7cf-56352aa65ab1
 
-https://github.com/user-attachments/assets/dd2c8504-4b0f-4422-bdb1-931aac9a801d
+
 
 
 
